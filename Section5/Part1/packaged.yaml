@@ -1,0 +1,80 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'AWS Serverless Application
+
+  Sample SAM Template for AWS Serverless Application
+
+  '
+Globals:
+  Function:
+    Environment:
+      Variables:
+        COURSE_TABLE: CourseTable
+        USER_TABLE: UsersTable
+    Timeout: 3
+Resources:
+  CreateUserFunction:
+    Properties:
+      CodeUri: s3://colib-digitial-hands-on-dynamo/847ccc3f9b095ddfa1dc52e228aaf053
+      Events:
+        Createuser:
+          Properties:
+            Method: put
+            Path: /users
+          Type: Api
+      Handler: create_user.lambda_handler
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: UsersTable
+      Runtime: python3.7
+    Type: AWS::Serverless::Function
+  GetUserFunction:
+    Properties:
+      CodeUri: s3://colib-digitial-hands-on-dynamo/847ccc3f9b095ddfa1dc52e228aaf053
+      Events:
+        Createuser:
+          Properties:
+            Method: get
+            Path: /users/{userid}
+          Type: Api
+      Handler: get_user.lambda_handler
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: UsersTable
+      Runtime: python3.7
+    Type: AWS::Serverless::Function
+  LoginUserFunction:
+    Properties:
+      CodeUri: s3://colib-digitial-hands-on-dynamo/847ccc3f9b095ddfa1dc52e228aaf053
+      Events:
+        Createuser:
+          Properties:
+            Method: post
+            Path: /users/{userid}/login
+          Type: Api
+      Handler: login_user.lambda_handler
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: UsersTable
+      Runtime: python3.7
+    Type: AWS::Serverless::Function
+  UsersTable:
+    Properties:
+      AttributeDefinitions:
+      - AttributeName: user_id
+        AttributeType: S
+      - AttributeName: last_login
+        AttributeType: N
+      KeySchema:
+      - AttributeName: user_id
+        KeyType: HASH
+      - AttributeName: last_login
+        KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: 2
+        WriteCapacityUnits: 2
+      TableName: UsersTable
+    Type: AWS::DynamoDB::Table
+Transform: AWS::Serverless-2016-10-31

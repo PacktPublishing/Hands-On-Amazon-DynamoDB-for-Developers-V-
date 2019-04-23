@@ -1,0 +1,91 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'AWS Serverless Application
+
+  Sample SAM Template for AWS Serverless Application
+
+  '
+Globals:
+  Function:
+    Environment:
+      Variables:
+        USER_TABLE: UsersTable
+    Timeout: 30
+Resources:
+  CreateUserFunction:
+    Properties:
+      CodeUri: s3://colib-digitial-hands-on-dynamo/22c9e2a89cb2202ef7cc21a95c798d7d
+      Events:
+        Createuser:
+          Properties:
+            Method: put
+            Path: /users
+          Type: Api
+      Handler: create_user.lambda_handler
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: UsersTable
+      Runtime: python3.7
+    Type: AWS::Serverless::Function
+  GetUserFunction:
+    Properties:
+      CodeUri: s3://colib-digitial-hands-on-dynamo/22c9e2a89cb2202ef7cc21a95c798d7d
+      Events:
+        Createuser:
+          Properties:
+            Method: get
+            Path: /users/{userid}
+          Type: Api
+      Handler: get_user.lambda_handler
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: UsersTable
+      Runtime: python3.7
+    Type: AWS::Serverless::Function
+  LoginUserFunction:
+    Properties:
+      CodeUri: s3://colib-digitial-hands-on-dynamo/22c9e2a89cb2202ef7cc21a95c798d7d
+      Events:
+        Createuser:
+          Properties:
+            Method: post
+            Path: /users/{userid}/login
+          Type: Api
+      Handler: login_user.lambda_handler
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: UsersTable
+      Runtime: python3.7
+    Type: AWS::Serverless::Function
+  UsersTable:
+    Properties:
+      AttributeDefinitions:
+      - AttributeName: user_id
+        AttributeType: S
+      KeySchema:
+      - AttributeName: user_id
+        KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 2
+        WriteCapacityUnits: 2
+      TableName: UsersTable
+    Type: AWS::DynamoDB::Table
+  ValidateAuthFunction:
+    Properties:
+      CodeUri: s3://colib-digitial-hands-on-dynamo/22c9e2a89cb2202ef7cc21a95c798d7d
+      Events:
+        Createuser:
+          Properties:
+            Method: post
+            Path: /someaction
+          Type: Api
+      Handler: validate_auth.lambda_handler
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: UsersTable
+      Runtime: python3.7
+    Type: AWS::Serverless::Function
+Transform: AWS::Serverless-2016-10-31

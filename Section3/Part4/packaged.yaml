@@ -1,0 +1,154 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'AWS Serverless Application
+
+  Sample SAM Template for AWS Serverless Application
+
+  '
+Globals:
+  Function:
+    Environment:
+      Variables:
+        COURSE_TABLE: CourseTable
+        USER_TABLE: UsersTable
+    Timeout: 3
+Resources:
+  AddCourseFunction:
+    Properties:
+      CodeUri: s3://colib-digitial-hands-on-dynamo/c91e5782fb1eb697f2beb6da3a1e2654
+      Events:
+        Createuser:
+          Properties:
+            Method: put
+            Path: /users/{userid}/{courseid}
+          Type: Api
+      Handler: add_course.lambda_handler
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: CourseTable
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: UsersTable
+      Runtime: python3.7
+    Type: AWS::Serverless::Function
+  CourseTable:
+    Properties:
+      AttributeDefinitions:
+      - AttributeName: course_id
+        AttributeType: S
+      KeySchema:
+      - AttributeName: course_id
+        KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 2
+        WriteCapacityUnits: 2
+      TableName: CourseTable
+    Type: AWS::DynamoDB::Table
+  CreateCourseFunction:
+    Properties:
+      CodeUri: s3://colib-digitial-hands-on-dynamo/c91e5782fb1eb697f2beb6da3a1e2654
+      Events:
+        Createuser:
+          Properties:
+            Method: put
+            Path: /courses
+          Type: Api
+      Handler: create_course.lambda_handler
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: CourseTable
+      Runtime: python3.7
+    Type: AWS::Serverless::Function
+  CreateUserFunction:
+    Properties:
+      CodeUri: s3://colib-digitial-hands-on-dynamo/c91e5782fb1eb697f2beb6da3a1e2654
+      Events:
+        Createuser:
+          Properties:
+            Method: put
+            Path: /users
+          Type: Api
+      Handler: create_user.lambda_handler
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: UsersTable
+      Runtime: python3.7
+    Type: AWS::Serverless::Function
+  GetCourseFunction:
+    Properties:
+      CodeUri: s3://colib-digitial-hands-on-dynamo/c91e5782fb1eb697f2beb6da3a1e2654
+      Events:
+        Createuser:
+          Properties:
+            Method: get
+            Path: /courses/{courseid}
+          Type: Api
+      Handler: get_course.lambda_handler
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: CourseTable
+      Runtime: python3.7
+    Type: AWS::Serverless::Function
+  GetUserByEmailFunction:
+    Properties:
+      CodeUri: s3://colib-digitial-hands-on-dynamo/c91e5782fb1eb697f2beb6da3a1e2654
+      Events:
+        Createuser:
+          Properties:
+            Method: get
+            Path: /users/email/{email_address}
+          Type: Api
+      Handler: get_user_by_email.lambda_handler
+      Policies:
+      - AmazonDynamoDBFullAccess
+      Runtime: python3.7
+    Type: AWS::Serverless::Function
+  GetUserFunction:
+    Properties:
+      CodeUri: s3://colib-digitial-hands-on-dynamo/c91e5782fb1eb697f2beb6da3a1e2654
+      Events:
+        Createuser:
+          Properties:
+            Method: get
+            Path: /users/{userid}
+          Type: Api
+      Handler: get_user.lambda_handler
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: UsersTable
+      Runtime: python3.7
+    Type: AWS::Serverless::Function
+  UsersTable:
+    Properties:
+      AttributeDefinitions:
+      - AttributeName: user_id
+        AttributeType: S
+      - AttributeName: last_login
+        AttributeType: N
+      - AttributeName: email_address
+        AttributeType: S
+      GlobalSecondaryIndexes:
+      - IndexName: EmailIndex
+        KeySchema:
+        - AttributeName: email_address
+          KeyType: HASH
+        Projection:
+          ProjectionType: ALL
+        ProvisionedThroughput:
+          ReadCapacityUnits: 2
+          WriteCapacityUnits: 2
+      KeySchema:
+      - AttributeName: user_id
+        KeyType: HASH
+      - AttributeName: last_login
+        KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: 2
+        WriteCapacityUnits: 2
+      TableName: UsersTable
+    Type: AWS::DynamoDB::Table
+Transform: AWS::Serverless-2016-10-31

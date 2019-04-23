@@ -1,0 +1,164 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+    AWS Serverless Application
+
+    Sample SAM Template for AWS Serverless Application
+
+Globals:
+    Function:
+        Timeout: 3
+        Environment:
+          Variables:
+            USER_TABLE: UsersTable
+            COURSE_TABLE: CourseTable
+
+
+Resources:
+    UsersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: UsersTable
+        AttributeDefinitions:
+          - AttributeName: user_id
+            AttributeType: S
+          - AttributeName: last_login
+            AttributeType: N
+          - AttributeName: email_address
+            AttributeType: S
+        KeySchema:
+          - AttributeName: user_id
+            KeyType: HASH
+          - AttributeName: last_login
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 2
+          WriteCapacityUnits: 2
+        GlobalSecondaryIndexes:
+          - IndexName: EmailIndex
+            KeySchema:
+              - AttributeName: email_address
+                KeyType: HASH
+            ProvisionedThroughput:
+              ReadCapacityUnits: 2
+              WriteCapacityUnits: 2
+            Projection:
+              ProjectionType: ALL
+
+    CourseTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: CourseTable
+        AttributeDefinitions:
+          - AttributeName: course_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: course_id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 2
+          WriteCapacityUnits: 2
+
+
+    CreateUserFunction:
+      Type: AWS::Serverless::Function 
+      Properties:
+        CodeUri: .
+        Handler: create_user.lambda_handler
+        Runtime: python3.7
+        Policies:
+          - DynamoDBCrudPolicy:
+              TableName:
+                !Ref UsersTable
+        Events:
+          Createuser:
+            Type: Api 
+            Properties:
+              Path: /users
+              Method: put
+
+    GetUserFunction:
+      Type: AWS::Serverless::Function 
+      Properties:
+        CodeUri: .
+        Handler: get_user.lambda_handler
+        Runtime: python3.7
+        Policies:
+          - DynamoDBCrudPolicy:
+              TableName:
+                !Ref UsersTable
+        Events:
+          Createuser:
+            Type: Api 
+            Properties:
+              Path: /users/{userid}
+              Method: get
+
+    GetUserByEmailFunction:
+      Type: AWS::Serverless::Function 
+      Properties:
+        CodeUri: .
+        Handler: get_user_by_email.lambda_handler
+        Runtime: python3.7
+        Policies:
+          - AmazonDynamoDBFullAccess
+        Events:
+          Createuser:
+            Type: Api 
+            Properties:
+              Path: /users/email/{email_address}
+              Method: get
+
+    AddCourseFunction:
+      Type: AWS::Serverless::Function 
+      Properties:
+        CodeUri: .
+        Handler: add_course.lambda_handler
+        Runtime: python3.7
+        Policies:
+          - DynamoDBCrudPolicy:
+              TableName:
+                !Ref CourseTable
+          - DynamoDBCrudPolicy:
+              TableName:
+                !Ref UsersTable
+        Events:
+          Createuser:
+            Type: Api 
+            Properties:
+              Path: /users/{userid}/{courseid}
+              Method: put
+
+    CreateCourseFunction:
+      Type: AWS::Serverless::Function 
+      Properties:
+        CodeUri: .
+        Handler: create_course.lambda_handler
+        Runtime: python3.7
+        Policies:
+          - DynamoDBCrudPolicy:
+              TableName:
+                !Ref CourseTable
+        Events:
+          Createuser:
+            Type: Api 
+            Properties:
+              Path: /courses
+              Method: put
+
+    GetCourseFunction:
+      Type: AWS::Serverless::Function 
+      Properties:
+        CodeUri: .
+        Handler: get_course.lambda_handler
+        Runtime: python3.7
+        Policies:
+          - DynamoDBCrudPolicy:
+              TableName:
+                !Ref CourseTable
+        Events:
+          Createuser:
+            Type: Api 
+            Properties:
+              Path: /courses/{courseid}
+              Method: get

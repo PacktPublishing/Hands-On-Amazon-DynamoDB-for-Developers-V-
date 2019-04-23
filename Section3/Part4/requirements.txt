@@ -1,0 +1,5 @@
+requests==2.20.0
+aws-sam-cli==0.9.0
+pyyaml==3.13
+regex==2018.11.22
+boto3

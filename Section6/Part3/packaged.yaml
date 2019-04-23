@@ -1,0 +1,69 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'AWS Serverless Application
+
+  Sample SAM Template for AWS Serverless Application
+
+  '
+Globals:
+  Function:
+    Environment:
+      Variables:
+        S3_BUCKET:
+          Ref: ColibriUserSinkBucket
+        USER_TABLE: UsersTable
+    Timeout: 30
+Resources:
+  ColibriUserSinkBucket:
+    Type: AWS::S3::Bucket
+  CreateUserFunction:
+    Properties:
+      CodeUri: s3://colib-digitial-hands-on-dynamo/adbdea1df49ca20adf25199e3822c2ea
+      Events:
+        Createuser:
+          Properties:
+            Method: put
+            Path: /users
+          Type: Api
+      Handler: create_user.lambda_handler
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: UsersTable
+      Runtime: python3.7
+    Type: AWS::Serverless::Function
+  DynamoStreamProcessorFunction:
+    Properties:
+      CodeUri: s3://colib-digitial-hands-on-dynamo/adbdea1df49ca20adf25199e3822c2ea
+      Events:
+        DynamoDB1:
+          Properties:
+            BatchSize: 100
+            StartingPosition: TRIM_HORIZON
+            Stream:
+              Fn::GetAtt:
+              - UsersTable
+              - StreamArn
+          Type: DynamoDB
+      Handler: process_stream.lambda_handler
+      Policies:
+      - S3CrudPolicy:
+          BucketName:
+            Ref: ColibriUserSinkBucket
+      Runtime: python3.7
+    Type: AWS::Serverless::Function
+  UsersTable:
+    Properties:
+      AttributeDefinitions:
+      - AttributeName: user_id
+        AttributeType: S
+      KeySchema:
+      - AttributeName: user_id
+        KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 2
+        WriteCapacityUnits: 2
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
+      TableName: UsersTable
+    Type: AWS::DynamoDB::Table
+Transform: AWS::Serverless-2016-10-31

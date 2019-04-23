@@ -1,0 +1,75 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'AWS Serverless Application
+
+  Sample SAM Template for AWS Serverless Application
+
+  '
+Globals:
+  Function:
+    Environment:
+      Variables:
+        AUTH_TABLE: AuthsTable
+        USER_TABLE: UsersTable
+    Timeout: 30
+Resources:
+  AddCourseFunction:
+    Properties:
+      CodeUri: s3://colib-digitial-hands-on-dynamo/41f632b475f180e68fdd80cd95be1e96
+      Events:
+        Createuser:
+          Properties:
+            Method: put
+            Path: /users/{userid}/{courseid}
+          Type: Api
+      Handler: add_course.lambda_handler
+      Runtime: python3.7
+    Type: AWS::Serverless::Function
+  CreateCourseFunction:
+    Properties:
+      CodeUri: s3://colib-digitial-hands-on-dynamo/41f632b475f180e68fdd80cd95be1e96
+      Events:
+        Createuser:
+          Properties:
+            Method: put
+            Path: /courses/{courseid}
+          Type: Api
+      Handler: create_course.lambda_handler
+      Runtime: python3.7
+    Type: AWS::Serverless::Function
+  CreateUserFunction:
+    Properties:
+      CodeUri: s3://colib-digitial-hands-on-dynamo/41f632b475f180e68fdd80cd95be1e96
+      Events:
+        Createuser:
+          Properties:
+            Method: put
+            Path: /users/{userid}
+          Type: Api
+      Handler: create_user.lambda_handler
+      Runtime: python3.7
+    Type: AWS::Serverless::Function
+  GetCourseFunction:
+    Properties:
+      CodeUri: s3://colib-digitial-hands-on-dynamo/41f632b475f180e68fdd80cd95be1e96
+      Events:
+        Createuser:
+          Properties:
+            Method: get
+            Path: /courses/{courseid}
+          Type: Api
+      Handler: get_course.lambda_handler
+      Runtime: python3.7
+    Type: AWS::Serverless::Function
+  GetUserFunction:
+    Properties:
+      CodeUri: s3://colib-digitial-hands-on-dynamo/41f632b475f180e68fdd80cd95be1e96
+      Events:
+        Createuser:
+          Properties:
+            Method: get
+            Path: /users/{userid}
+          Type: Api
+      Handler: get_user.lambda_handler
+      Runtime: python3.7
+    Type: AWS::Serverless::Function
+Transform: AWS::Serverless-2016-10-31
